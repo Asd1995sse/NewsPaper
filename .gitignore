@@ -1,0 +1,4 @@
+/db.sqlite3
+/NewsPaper/__pycache__
+/news/__pycache__
+/news/migrations/__pycache__

@@ -1,0 +1,97 @@
+# 1. Импортирование модулей
+from django.db import models
+from django.contrib.auth.models import User
+from news.models import Author, Category, Post, Comment
+# 2. Создание юзеров
+user1 = User.objects.create_user('user1')
+user2 = User.objects.create_user('user2')
+
+# 3. Создание авторов
+author1 = Author.objects.create(user=user1)
+author2 = Author.objects.create(user=user2)
+
+# 4. Создание категорий
+Category.objects.create(name='Спорт')
+Category.objects.create(name='Музыка')
+Category.objects.create(name='Образование')
+Category.objects.create(name='Технологии')
+
+# 5. Создание статей и новости
+post1 = Post.objects.create(
+    author=author1,
+    post_type=Post.ARTICLE,
+    title='Первая статья',
+    content='Очень длинный текст статьи...' * 13
+)
+
+post2 = Post.objects.create(
+    author=author2,
+    post_type=Post.ARTICLE,
+    title='Вторая статья',
+    content='Ещё более длинный текст...' * 15
+)
+
+post3 = Post.objects.create(
+    author=author1,
+    post_type=Post.NEWS,
+    title='Новость дня',
+    content='Краткое описание новости...'
+)
+
+# 6. Присвоение категорий
+category1 = Category.objects.get(name='Спорт')
+category2 = Category.objects.get(name='Музыка')
+category3 = Category.objects.get(name='Технологии')
+
+post1.categories.add(category1, category2)
+post2.categories.add(category3)
+post3.categories.add(category1)
+
+# 7. Создание комментариев
+Comment.objects.create(post=post1, user=user1, text='Отличная статья!')
+Comment.objects.create(post=post1, user=user2, text='Согласен, очень интересно')
+Comment.objects.create(post=post2, user=user1, text='Было скучно!')
+Comment.objects.create(post=post3, user=user2, text='Спасибо за новость')
+
+# 8. Применение like() и dislike()
+post1.like()
+post1.like()
+post1.dislike()
+
+post2.like()
+post2.like()
+post2.like()    
+
+post3.dislike()
+
+# 9. Комментарии
+comment1 = Comment.objects.get(id=1)
+comment1.like()
+comment1.like()
+
+comment2 = Comment.objects.get(id=2)
+comment2.dislike()
+
+# 10. Обновление рейтингов авторов
+author1.update_rating()
+author2.update_rating()
+
+# 11. Лучший пользователь
+best_user = User.objects.annotate(
+    rating=models.Sum('author__rating')
+).order_by('-rating').first()
+print(f'{best_user.username} - {best_user.author.rating}')
+
+# 12. Лучшая статья
+best_post = Post.objects.order_by('-rating').first()
+print(f'Дата: {best_post.created_at}')
+print(f'Автор: {best_post.author.user.username}')
+print(f'Рейтинг: {best_post.rating}')
+print(f'Заголовок: {best_post.title}')
+print(f'Превью: {best_post.preview()}')
+
+# 13. Все комментарии к лучшей статье
+comments = Comment.objects.filter(post=best_post)
+for comment in comments:
+    print(f'Дата: {comment.created_at}, Пользователь: {comment.user.username}, '
+          f'Рейтинг: {comment.rating}, Текст: {comment.text}')
