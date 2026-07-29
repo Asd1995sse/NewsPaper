@@ -1,0 +1,15 @@
+{% extends 'default.html' %}
+
+{% block title %}Редактирование новости{% endblock %}
+
+{% block content %}
+    <h1>Редактирование новости</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Сохранить">
+    </form>
+    
+    <p><a href="{% url 'news:list' %}">← Назад</a></p>
+{% endblock %}

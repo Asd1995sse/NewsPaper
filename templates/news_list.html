@@ -6,23 +6,56 @@
 {% block content %}
     <h1>Все новости</h1>
     
-    {% if posts %}
-        {% for post in posts %}
+    <p>
+        <a href="{% url 'news:search' %}">Поиск</a> |
+        <a href="{% url 'news:news_create' %}">Добавить новость</a> |
+        <a href="{% url 'news:article_create' %}">Добавить статью</a>
+    </p>
+
+    {% if page_obj %}
+        {% for post in page_obj %}
             <div class="post">
                 <div class="post-title">
                     <a href="{% url 'news:detail' post.pk %}">
-                        {{ post.title|censor }}  <!-- Применяем фильтр -->
+                        {{ post.title|censor }}
                     </a>
                 </div>
                 <div class="post-date">
                     {{ post.created_at|date:"d.m.Y" }}
                 </div>
                 <div class="post-text">
-                    {{ post.content|censor|truncatechars:20 }}  <!-- Фильтр + обрезка -->
+                    {{ post.content|censor|truncatechars:20 }}
+                </div>
+                <div class="post-actions">
+                    <a href="{% url 'news:news_edit' post.pk %}">Редактировать</a> |
+                    <a href="{% url 'news:news_delete' post.pk %}">Удалить</a>
                 </div>
             </div>
         {% endfor %}
     {% else %}
         <p>Новостей пока нет.</p>
     {% endif %}
+
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; Первая</a>
+            <a href="?page={{ page_obj.previous_page_number }}">Назад</a>
+        {% endif %}
+
+        <!-- ТОЛЬКО БЛИЖАЙШИЕ СТРАНИЦЫ -->
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <span class="current">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">Вперёд</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">Последняя &raquo;</a>
+        {% endif %}
+    </span>
+</div>
 {% endblock %}

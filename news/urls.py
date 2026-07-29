@@ -4,6 +4,18 @@ from . import views
 app_name = 'news'
 
 urlpatterns = [
-    path('', views.news_list, name='list'),           # /news/
-    path('<int:pk>/', views.news_detail, name='detail'),  # /news/1/
+    # Новости
+    path('', views.news_list, name='list'),
+    # Расширенная страница новостей
+    path('<int:pk>/', views.news_detail, name='detail'),
+    # Поиск
+    path('search/', views.news_search, name='search'),
+    # CRUD для новостей
+    path('create/', views.NewsCreateView.as_view(), name='news_create'),
+    path('<int:pk>/edit/', views.NewsUpdateView.as_view(), name='news_edit'),
+    path('<int:pk>/delete/', views.NewsDeleteView.as_view(), name='news_delete'),
+    # CRUD для статей
+    path('articles/create/', views.ArticleCreateView.as_view(), name='article_create'),
+    path('articles/<int:pk>/edit/', views.ArticleUpdateView.as_view(), name='article_edit'),
+    path('articles/<int:pk>/delete/', views.ArticleDeleteView.as_view(), name='article_delete'),
 ]

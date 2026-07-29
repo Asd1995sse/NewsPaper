@@ -1,0 +1,40 @@
+{% extends 'default.html' %}
+{% load censor_filters %}
+
+{% block title %}Поиск новостей{% endblock %}
+
+{% block content %}
+    <h1>Поиск новостей</h1>
+    
+    <form method="get">
+        <table>
+            {{ filter.form.as_table }}
+        </table>
+        <input type="submit" value="Найти">
+    </form>
+    
+    <hr>
+    
+    {% if filter.qs %}
+        <h2>Результаты ({{ filter.qs|length }})</h2>
+        {% for post in filter.qs %}
+            <div class="post">
+                <div class="post-title">
+                    <a href="{% url 'news:detail' post.pk %}">
+                        {{ post.title|censor }}
+                    </a>
+                </div>
+                <div class="post-date">
+                    {{ post.created_at|date:"d.m.Y" }}
+                </div>
+                <div class="post-text">
+                    {{ post.content|censor|truncatechars:20 }}
+                </div>
+            </div>
+        {% empty %}
+            <p>Новостей не найдено.</p>
+        {% endfor %}
+    {% endif %}
+    
+    <p><a href="{% url 'news:list' %}">← Назад ко всем новостям</a></p>
+{% endblock %}

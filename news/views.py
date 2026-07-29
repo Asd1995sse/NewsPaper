@@ -1,27 +1,121 @@
 from django.shortcuts import render, get_object_or_404
-from .models import Post
+from django.core.paginator import Paginator
+from django.views.generic import CreateView, UpdateView, DeleteView, ListView
+from django.urls import reverse_lazy
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.forms import formset_factory
+from .models import Post, Category, Author
+from .filters import PostFilter
+from .forms import PostForm
 
 # Create your views here.
 
 
-
+# СТРАНИЦА СО СПИСКОМ НОВОСТЕЙ
 def news_list(request):
-    """Список всех новостей (только тип NEWS), отсортированных по дате"""
     posts = Post.objects.filter(
         post_type=Post.NEWS
-    ).order_by('-created_at')  # от свежих к старым
+    ).order_by('-created_at')
+
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     context = {
-        'posts': posts,
+        'page_obj': page_obj,
     }
     return render(request, 'news_list.html', context)
 
 
-def news_detail(request, pk):
-    """Детальная страница новости"""
-    post = get_object_or_404(Post, pk=pk, post_type=Post.NEWS)
+# СТРАНИЦА ПОИСКА
+def news_search(request):
+    posts = Post.objects.filter(post_type=Post.NEWS).order_by('-created_at')
+    filter = PostFilter(request.GET, queryset=posts)
 
     context = {
-        'post': post,
+        'filter': filter,
     }
+    return render(request, 'news_search.html', context)
+
+
+# ДЕТАЛЬНАЯ СТРАНИЦА НОВОСТИ
+def news_detail(request, pk):
+    post = get_object_or_404(Post, pk=pk, post_type=Post.NEWS)
+    context = {'post': post}
     return render(request, 'news_detail.html', context)
+
+
+# СОЗДАНИЕ НОВОСТИ
+class NewsCreateView(CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'news_create.html'
+    success_url = reverse_lazy('news:list')
+
+    def form_valid(self, form):
+        form.instance.post_type = Post.NEWS
+        # Автор = текущий пользователь, если нет, то создаем нового
+        author, created = Author.objects.get_or_create(user=self.request.user)
+        form.instance.author = author
+        return super().form_valid(form)
+
+
+# РЕДАКТИРОВАНИЕ НОВОСТИ
+class NewsUpdateView(PermissionRequiredMixin, UpdateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'news_edit.html'
+    success_url = reverse_lazy('news:list')
+    permission_required = 'news.change_post'
+
+    def get_queryset(self):
+        # Только новости
+        return Post.objects.filter(post_type=Post.NEWS)
+
+
+# УДАЛЕНИЕ НОВОСТИ
+class NewsDeleteView(PermissionRequiredMixin, DeleteView):
+    model = Post
+    template_name = 'news_confirm_delete.html'
+    success_url = reverse_lazy('news:list')
+    permission_required = 'news.delete_post'
+
+    def get_queryset(self):
+        return Post.objects.filter(post_type=Post.NEWS)
+
+
+# СОЗДАНИЕ СТАТЬИ
+class ArticleCreateView(CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'article_create.html'
+    success_url = reverse_lazy('news:list')
+
+    def form_valid(self, form):
+        form.instance.post_type = Post.ARTICLE  # Тип "статья"
+        author, created = Author.objects.get_or_create(user=self.request.user)
+        form.instance.author = author
+        return super().form_valid(form)
+
+
+# РЕДАКТИРОВАНИЕ СТАТЬИ
+class ArticleUpdateView(PermissionRequiredMixin, UpdateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'article_edit.html'
+    success_url = reverse_lazy('news:list')
+    permission_required = 'news.change_post'
+
+    def get_queryset(self):
+        return Post.objects.filter(post_type=Post.ARTICLE)
+
+
+# УДАЛЕНИЕ СТАТЬИ
+class ArticleDeleteView(PermissionRequiredMixin, DeleteView):
+    model = Post
+    template_name = 'article_confirm_delete.html'
+    success_url = reverse_lazy('news:list')
+    permission_required = 'news.delete_post'
+
+    def get_queryset(self):
+        return Post.objects.filter(post_type=Post.ARTICLE)
