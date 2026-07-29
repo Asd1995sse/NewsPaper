@@ -1,0 +1,15 @@
+{% extends 'default.html' %}
+{% load censor_filters %}
+
+{% block title %}{{ post.title|censor }}{% endblock %}
+
+{% block content %}
+    <h1>{{ post.title|censor }}</h1>
+    <div class="post-date">
+        Опубликовано: {{ post.created_at|date:"d.m.Y" }}
+    </div>
+    <div class="post-text">
+        {{ post.content|censor }}  <!-- Фильтр на весь текст -->
+    </div>
+    <p><a href="{% url 'news:list' %}">← Назад к списку</a></p>
+{% endblock %}

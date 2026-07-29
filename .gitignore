@@ -2,3 +2,5 @@
 /NewsPaper/__pycache__
 /news/__pycache__
 /news/migrations/__pycache__
+/news/templatetags/__pycache__
+/.idea

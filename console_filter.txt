@@ -1,0 +1,43 @@
+from news.models import Author, Category, Post, Comment
+from django.contrib.auth.models import User
+
+# 1 Создаём пользователей и авторов
+user1 = User.objects.create_user('user1', password='12345')
+user2 = User.objects.create_user('user2', password='12345')
+author1 = Author.objects.create(user=user1)
+author2 = Author.objects.create(user=user2)
+
+# 2 Категории
+Category.objects.create(name='Спорт')
+Category.objects.create(name='Политика')
+Category.objects.create(name='Технологии')
+Category.objects.create(name='Образование')
+
+# 3 Создаём новости (Post с post_type=Post.NEWS)
+news1 = Post.objects.create(
+    author=author1,
+    post_type=Post.NEWS,
+    title='Сенсация: редиска оказалась полезной!',
+    content='Учёные выяснили, что редиска содержит витамины. Но быть нехорошим человеком, значит быть редиской!'
+)
+
+news2 = Post.objects.create(
+    author=author2,
+    post_type=Post.NEWS,
+    title='Дурак попытался обмануть систему',
+    content='Мошенник, которого все называли дураком, был пойман.'
+)
+
+news3 = Post.objects.create(
+    author=author2,
+    post_type=Post.NEWS,
+    title='Квадроберы устроили забег в центре города',
+    content='После непродолжительных споров квадроберов с хобихорсингерами началсмя забег в центре города. Подозреваемые были объявлены в международный розыск!'
+)
+
+# 4 Присваиваем категории
+cat1 = Category.objects.get(name='Спорт')
+cat2 = Category.objects.get(name='Технологии')
+news1.categories.add(cat1)
+news2.categories.add(cat2)
+news3.categories.add(cat1)

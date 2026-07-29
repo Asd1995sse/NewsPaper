@@ -1,0 +1,28 @@
+{% extends 'default.html' %}
+{% load censor_filters %}
+
+{% block title %}Все новости{% endblock %}
+
+{% block content %}
+    <h1>Все новости</h1>
+    
+    {% if posts %}
+        {% for post in posts %}
+            <div class="post">
+                <div class="post-title">
+                    <a href="{% url 'news:detail' post.pk %}">
+                        {{ post.title|censor }}  <!-- Применяем фильтр -->
+                    </a>
+                </div>
+                <div class="post-date">
+                    {{ post.created_at|date:"d.m.Y" }}
+                </div>
+                <div class="post-text">
+                    {{ post.content|censor|truncatechars:20 }}  <!-- Фильтр + обрезка -->
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>Новостей пока нет.</p>
+    {% endif %}
+{% endblock %}
