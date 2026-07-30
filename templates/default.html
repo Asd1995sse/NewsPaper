@@ -20,8 +20,20 @@
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                        <li class="nav-item"><a class="nav-link" href="{% url 'news:list' %}">Новости</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'news:search' %}">Поиск</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'news:list' %}">Новости</a></li>
+                        {% if user.is_authenticated %}
+                           <li class="nav-item"> <span class="nav-link">Привет, {{ user.username }}!</span></li>
+                        {% if not user.groups.all.0.name == 'authors' %}
+                            <li class="nav-item"><a class="nav-link" href="{% url 'protect:upgrade' %}">Стать автором</a></li>
+                        {% else %}
+                             <span class="nav-link">Вы автор</span>
+                        {% endif %}
+                            <li class="nav-item"><a class="nav-link" href="{% url 'account_logout' %}">Выйти</a></li>
+                        {% else %}
+                           <li class="nav-item"><a class="nav-link" href="{% url 'account_login' %}">Войти</a></li>
+                           <li class="nav-item"><a class="nav-link" href="{% url 'account_signup' %}">Регистрация</a></li>
+                        {% endif %}
                     </ul>
                 </div>
             </div>

@@ -39,9 +39,41 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'news',
     'django_filters',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.yandex',
+    'news',
+    'protect',
+    'sign',
+
 ]
+
+SITE_ID = 1
+
+# Настройки allauth
+ACCOUNT_LOGIN_METHODS = {'username'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/news/'
+LOGOUT_REDIRECT_URL = '/news/'
+
+# Настройки социальной авторизации
+SOCIALACCOUNT_PROVIDERS = {
+    'yandex': {
+        'APP': {
+            'client_id': 'super_secret_ID',
+            'secret': 'super_secret_KEY',
+        }
+    }
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -51,6 +83,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = 'NewsPaper.urls'

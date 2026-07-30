@@ -1,0 +1,48 @@
+{% extends 'default.html' %}
+{% load socialaccount %}
+
+{% block title %}Вход{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h2>Вход в систему</h2>
+
+    {% if form.errors %}
+        <div class="alert alert-error">
+            Неверное имя пользователя или пароль.
+        </div>
+    {% endif %}
+
+    <!-- Обычная форма входа -->
+    <form method="post" action="{% url 'account_login' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.as_p }}
+        </div>
+        <button type="submit" class="btn btn-primary">Войти</button>
+    </form>
+
+    <hr>
+
+    <!-- OAuth через Yandex -->
+    <div class="social-login">
+        <p>Или войдите через:</p>
+        <form action="{% provider_login_url 'yandex' process='login' next='/news/' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-yandex">
+                <span>Войти через Яндекс</span>
+            </button>
+        </form>
+
+        <!-- Если в будущем добавите Google -->
+        {# <form action="{% provider_login_url 'google' process='login' next='/news/' %}" method="post"> #}
+        {#     {% csrf_token %} #}
+        {#     <button type="submit" class="btn btn-google">Войти через Google</button> #}
+        {# </form> #}
+    </div>
+
+    <p class="signup-link">
+        Нет аккаунта? <a href="{% url 'account_signup' %}">Зарегистрироваться</a>
+    </p>
+</div>
+{% endblock %}

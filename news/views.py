@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.urls import reverse_lazy
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.forms import formset_factory
 from .models import Post, Category, Author
 from .filters import PostFilter
@@ -46,22 +46,22 @@ def news_detail(request, pk):
 
 
 # СОЗДАНИЕ НОВОСТИ
-class NewsCreateView(CreateView):
+class NewsCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Post
     form_class = PostForm
     template_name = 'news_create.html'
     success_url = reverse_lazy('news:list')
+    permission_required = 'news.add_post'
 
     def form_valid(self, form):
         form.instance.post_type = Post.NEWS
-        # Автор = текущий пользователь, если нет, то создаем нового
-        author, created = Author.objects.get_or_create(user=self.request.user)
+        author, _ = Author.objects.get_or_create(user=self.request.user)
         form.instance.author = author
         return super().form_valid(form)
 
 
 # РЕДАКТИРОВАНИЕ НОВОСТИ
-class NewsUpdateView(PermissionRequiredMixin, UpdateView):
+class NewsUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Post
     form_class = PostForm
     template_name = 'news_edit.html'
@@ -69,12 +69,11 @@ class NewsUpdateView(PermissionRequiredMixin, UpdateView):
     permission_required = 'news.change_post'
 
     def get_queryset(self):
-        # Только новости
         return Post.objects.filter(post_type=Post.NEWS)
 
 
 # УДАЛЕНИЕ НОВОСТИ
-class NewsDeleteView(PermissionRequiredMixin, DeleteView):
+class NewsDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Post
     template_name = 'news_confirm_delete.html'
     success_url = reverse_lazy('news:list')
@@ -85,11 +84,12 @@ class NewsDeleteView(PermissionRequiredMixin, DeleteView):
 
 
 # СОЗДАНИЕ СТАТЬИ
-class ArticleCreateView(CreateView):
+class ArticleCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Post
     form_class = PostForm
     template_name = 'article_create.html'
     success_url = reverse_lazy('news:list')
+    permission_required = 'news.add_post'
 
     def form_valid(self, form):
         form.instance.post_type = Post.ARTICLE  # Тип "статья"
@@ -99,7 +99,7 @@ class ArticleCreateView(CreateView):
 
 
 # РЕДАКТИРОВАНИЕ СТАТЬИ
-class ArticleUpdateView(PermissionRequiredMixin, UpdateView):
+class ArticleUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Post
     form_class = PostForm
     template_name = 'article_edit.html'
@@ -111,7 +111,7 @@ class ArticleUpdateView(PermissionRequiredMixin, UpdateView):
 
 
 # УДАЛЕНИЕ СТАТЬИ
-class ArticleDeleteView(PermissionRequiredMixin, DeleteView):
+class ArticleDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Post
     template_name = 'article_confirm_delete.html'
     success_url = reverse_lazy('news:list')

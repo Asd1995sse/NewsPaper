@@ -20,4 +20,7 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('news/', include('news.urls', namespace='news')),
+    path('accounts/', include('allauth.urls')),  # allauth
+    path('sign/', include('sign.urls', namespace='sign')),  # регистрация
+    path('protect/', include('protect.urls', namespace='protect')),  # права
 ]
