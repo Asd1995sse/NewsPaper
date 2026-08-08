@@ -1,0 +1,15 @@
+{% extends 'default.html' %}
+
+{% block title %}Создание категории{% endblock %}
+
+{% block content %}
+<h2>Создание категории</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Создать</button>
+</form>
+
+<p><a href="{% url 'news:list' %}">На главную</a></p>
+{% endblock %}

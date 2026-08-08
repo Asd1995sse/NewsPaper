@@ -7,12 +7,41 @@
     <h1>Все новости</h1>
     
     <p>
-        <a href="{% url 'news:search' %}">Поиск</a> |
-        <a href="{% url 'news:news_create' %}">Добавить новость</a> |
-        <a href="{% url 'news:article_create' %}">Добавить статью</a>
+        <a href="{% url 'news:search' %}">Поиск</a>
+        {% if user.is_authenticated and 'authors' in user.groups.all|join:", " %}
+        |<a href="{% url 'news:news_create' %}">Добавить новость</a> |
+        <a href="{% url 'news:article_create' %}">Добавить статью</a> |
+        <a href="{% url 'news:category_create' %}">Создать категорию</a>
+        {% endif %}
     </p>
 
     {% if page_obj %}
+
+        <div class="categories">
+        <h3>Категории:</h3>
+        {% if categories %}
+            {% for category in categories %}
+                <div class="category-item">
+                    <span>{{ category.name }}</span>
+                    {% if user.is_authenticated %}
+                        <form method="post" action="{% url 'news:subscribe_category' category.pk %}" style="display: inline;">
+                            {% csrf_token %}
+                            {% if user in category.subscribers.all %}
+                                <button type="submit" class="btn btn-danger">Отписаться</button>
+                            {% else %}
+                                <button type="submit" class="btn btn-success">Подписаться</button>
+                            {% endif %}
+                        </form>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Категорий пока нет.</p>
+        {% endif %}
+    </div>
+
+    <hr>
+
         {% for post in page_obj %}
             <div class="post">
                 <div class="post-title">
@@ -43,7 +72,6 @@
             <a href="?page={{ page_obj.previous_page_number }}">Назад</a>
         {% endif %}
 
-        <!-- ТОЛЬКО БЛИЖАЙШИЕ СТРАНИЦЫ -->
         {% for num in page_obj.paginator.page_range %}
             {% if page_obj.number == num %}
                 <span class="current">{{ num }}</span>

@@ -41,29 +41,47 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_filters',
     'django.contrib.sites',
+    'news',
+    'protect',
+    'sign',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.yandex',
-    'news',
-    'protect',
-    'sign',
+    "django_apscheduler",
 
 ]
 
 SITE_ID = 1
 
 # Настройки allauth
-ACCOUNT_LOGIN_METHODS = {'username'}
+ACCOUNT_LOGIN_METHODS = {'username', 'email'}
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
 ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_EMAIL_VERIFICATION = 'none'
-ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+
+# Кастомная форма регистрации, добавляет в common после регистрации
+ACCOUNT_SIGNUP_FORM_CLASS = 'sign.forms.BasicSignupForm'
 
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/news/'
 LOGOUT_REDIRECT_URL = '/news/'
+
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
+#APSCHEDULER_RUN_NOW_TIMEOUT = 25
+
+# SMTP
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = '127.0.0.1'
+EMAIL_PORT = 1025
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = 'ЪУЪ@example.com'
+EMAIL_HOST_PASSWORD = 'secretpassword'
+DEFAULT_FROM_EMAIL = 'ЪУЪ@example.com'
+
+
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Настройки социальной авторизации
 SOCIALACCOUNT_PROVIDERS = {
@@ -161,4 +179,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATICFILES_DIRS = [
     BASE_DIR / "static"
+]
+
+AUTHENTICATION_BACKENDS = [
+    # Бэкенд для входа через allauth (email/username)
+    'allauth.account.auth_backends.AuthenticationBackend',
+
+    # Стандартный бэкенд Django (на всякий случай)
+    'django.contrib.auth.backends.ModelBackend',
 ]

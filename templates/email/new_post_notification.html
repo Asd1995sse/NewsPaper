@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <h2>Добрый день, {{ user.username }}!</h2>
+
+    <p>На нашем увлекательном сайте доступна новая статья в твоём любимом разделе =_=!</p>
+
+    <h3><a href="{{ site_url }}{% url 'news:detail' post.pk %}">{{ post.title }}</a></h3>
+
+    <p>{{ post.content|truncatechars:50 }}</p>
+
+    <p><a href="{{ site_url }}{% url 'news:detail' post.pk %}">Читать полностью</a></p>
+
+    <hr>
+    <p><small>Это письмо отправлено автоматически. Не отвечайте на него.</small></p>
+</body>
+</html>

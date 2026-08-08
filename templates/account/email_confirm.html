@@ -1,0 +1,24 @@
+{% extends 'default.html' %}
+{% load i18n %}
+{% load account %}
+
+{% block title %}Подтверждение email{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Подтверждение адреса электронной почты</h2>
+
+    {% if confirmation %}
+        <p>Пожалуйста, подтвердите, что адрес <strong>{{ confirmation.email_address.email }}</strong> принадлежит вам.</p>
+
+        <form method="post" action="{% url 'account_confirm_email' confirmation.key %}">
+            {% csrf_token %}
+            <button class="btn btn-primary" type="submit">Подтвердить</button>
+        </form>
+
+    {% else %}
+        <p>Ссылка для подтверждения недействительна или её срок действия истёк.</p>
+        <p>Вы можете <a href="{% url 'account_email' %}">запросить новую ссылку</a>.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,15 +1,38 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.forms import formset_factory
 from .models import Post, Category, Author
 from .filters import PostFilter
-from .forms import PostForm
+from .forms import PostForm, CategoryForm
+from django.utils import timezone
+from datetime import timedelta , datetime
 
-# Create your views here.
+# Подписаться на категорию, при условии логина
+@login_required
+def subscribe_to_category(request, category_id):
+    category = get_object_or_404(Category, id=category_id)
+    user = request.user
 
+    if user in category.subscribers.all():
+        category.subscribers.remove(user)
+        messages.info(request, f'Вы отписались от категории "{category.name}"')
+    else:
+        category.subscribers.add(user)
+        messages.success(request, f'Вы подписались на категорию "{category.name}"')
+
+    return redirect(request.META.get('HTTP_REFERER', '/news/'))
+
+class CategoryCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+    model = Category
+    form_class = CategoryForm
+    template_name = 'category_create.html'
+    success_url = reverse_lazy('news:list')
+    permission_required = 'news.add_category'
 
 # СТРАНИЦА СО СПИСКОМ НОВОСТЕЙ
 def news_list(request):
@@ -23,6 +46,7 @@ def news_list(request):
 
     context = {
         'page_obj': page_obj,
+        'categories': Category.objects.all(),
     }
     return render(request, 'news_list.html', context)
 
@@ -54,6 +78,25 @@ class NewsCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     permission_required = 'news.add_post'
 
     def form_valid(self, form):
+        today = timezone.now().date()
+        start_of_day = timezone.make_aware(
+            datetime.combine(today, datetime.min.time())
+        )
+        end_of_day = timezone.make_aware(
+            datetime.combine(today, datetime.max.time())
+        )
+
+        posts_today = Post.objects.filter(
+            author=self.request.user.author,
+            post_type=Post.NEWS,
+            created_at__range=[start_of_day, end_of_day]
+        ).count()
+
+        if posts_today >= 3:
+            from django.contrib import messages
+            messages.error(self.request, 'Вы не можете публиковать более 3 новостей в сутки!')
+            return self.form_invalid(form)
+
         form.instance.post_type = Post.NEWS
         author, _ = Author.objects.get_or_create(user=self.request.user)
         form.instance.author = author

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <h2>Привет, {{ user.username }}!</h2>
+
+    <p>Новые статьи в разделе <strong>"{{ category.name }}"</strong> за неделю:</p>
+
+    <ul>
+        {% for post in posts %}
+            <li>
+                <a href="{{ site_url }}{% url 'news:detail' post.pk %}">
+                    {{ post.title }}
+                </a>
+                — {{ post.created_at|date:"d.m.Y" }}
+            </li>
+        {% endfor %}
+    </ul>
+
+    <p><a href="{{ site_url }}{% url 'news:list' %}">Перейти на сайт</a></p>
+
+    <hr>
+    <p><small>Это письмо отправлено автоматически. Не отвечайте на него.</small></p>
+</body>
+</html>
