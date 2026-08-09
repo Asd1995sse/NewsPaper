@@ -5,7 +5,7 @@ from django.template.loader import render_to_string
 from django.db.models.signals import m2m_changed
 from django.conf import settings
 from .models import Post
-
+from .tasks import send_notification_email
 
 @receiver(m2m_changed, sender=Post.categories.through)
 def notify_subscribers(sender, instance, action, **kwargs):
@@ -30,24 +30,15 @@ def notify_subscribers(sender, instance, action, **kwargs):
         return
 
     # Отправляем письма
+    site_url = 'http://127.0.0.1:8000'
     for user in subscribers:
-        try:
-            html_content = render_to_string(
-                'email/new_post_notification.html',
-                {
-                    'user': user,
-                    'post': instance,
-                    'site_url': 'http://127.0.0.1:8000',
-                }
-            )
+        send_notification_email.delay(
+            user_email=user.email,
+            username=user.username,
+            post_id=instance.id,
+            post_title=instance.title,
+            post_content=instance.content,
+            site_url=site_url,
+        )
 
-            send_mail(
-                subject=instance.title,
-                message=f'Здравствуй, {user.username}. Новая статья в твоём любимом разделе!',
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                html_message=html_content,
-                fail_silently=False,
-            )
-        except Exception as e:
-            print(f'Ошибка: {e}')
+

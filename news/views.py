@@ -93,9 +93,9 @@ class NewsCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         ).count()
 
         if posts_today >= 3:
-            from django.contrib import messages
-            messages.error(self.request, 'Вы не можете публиковать более 3 новостей в сутки!')
-            return self.form_invalid(form)
+          from django.contrib import messages
+          messages.error(self.request, 'Вы не можете публиковать более 3 новостей в сутки!')
+          return self.form_invalid(form)
 
         form.instance.post_type = Post.NEWS
         author, _ = Author.objects.get_or_create(user=self.request.user)
