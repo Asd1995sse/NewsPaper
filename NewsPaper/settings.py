@@ -130,9 +130,13 @@ WSGI_APPLICATION = 'NewsPaper.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'mysecretpassword',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
+    },
 }
 
 
@@ -196,3 +200,153 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
+
+#Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    # ФИЛЬТРЫ
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+    },
+
+    # ФОРМАТТЕРЫ
+    'formatters': {
+        'console': {
+            'format': '{asctime} {levelname} {message}',
+            'style': '{',
+        },
+        'console_warning': {
+            'format': '{asctime} {levelname} {pathname} {message}',
+            'style': '{',
+        },
+        'console_error': {
+            'format': '{asctime} {levelname} {pathname} {message}\n{exc_info}',
+            'style': '{',
+        },
+        'general': {
+            'format': '{asctime} {levelname} {module} {message}',
+            'style': '{',
+        },
+        'errors': {
+            'format': '{asctime} {levelname} {pathname} {message}\n{exc_info}',
+            'style': '{',
+        },
+        'security': {
+            'format': '{asctime} {levelname} {module} {message}',
+            'style': '{',
+        },
+        'email': {
+            'format': '{asctime} {levelname} {pathname} {message}',
+            'style': '{',
+        },
+    },
+
+    # ОБРАБОТЧИКИ (HANDLERS)
+    'handlers': {
+        # Консоль (только при DEBUG=True)
+        'console': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'console',
+        },
+        'console_warning': {
+            'level': 'WARNING',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'console_warning',
+        },
+        'console_error': {
+            'level': 'ERROR',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'console_error',
+        },
+        # general.log (только при DEBUG=False)
+        'general_file': {
+            'level': 'INFO',
+            'filters': ['require_debug_false'],
+            'class': 'logging.FileHandler',
+            'filename': 'general.log',
+            'formatter': 'general',
+        },
+
+        'errors_file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': 'errors.log',
+            'formatter': 'errors',
+        },
+        'security_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'security.log',
+            'formatter': 'security',
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter': 'email',
+            'include_html': False,
+        },
+    },
+    # ЛОГГЕРЫ
+    'loggers': {
+        # Основной логгер
+        'django': {
+            'handlers': ['console', 'console_warning', 'console_error', 'general_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+
+        # Ошибки
+        'django.request': {
+            'handlers': ['errors_file', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.server': {
+            'handlers': ['errors_file', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.template': {
+            'handlers': ['errors_file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['errors_file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+
+        # Безопасность
+        'django.security': {
+            'handlers': ['security_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+
+    # ROOT
+    'root': {
+        'handlers': ['console', 'console_warning', 'console_error', 'general_file'],
+        'level': 'DEBUG',
+    },
+}
+
+# Список разработчиков и вдминистраторов
+ADMINS = [
+    ('Admin', 'admin@example.com'),
+    ('Developer', 'dev@example.com'),
+]
+SERVER_EMAIL = 'soap@example.com'

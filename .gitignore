@@ -4,3 +4,6 @@
 /news/templatetags/__pycache__
 /.idea
 /sign/__pycache__
+/errors.log
+/general.log
+/security.log

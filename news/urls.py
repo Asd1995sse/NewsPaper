@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import test_logging
 
 app_name = 'news'
 
@@ -20,4 +21,5 @@ urlpatterns = [
     path('articles/<int:pk>/delete/', views.ArticleDeleteView.as_view(), name='article_delete'),
     path('category/<int:category_id>/subscribe/', views.subscribe_to_category, name='subscribe_category'),
     path('category/create/', views.CategoryCreateView.as_view(), name='category_create'),
+    path('test-logging/', test_logging, name='test_logging'),
 ]

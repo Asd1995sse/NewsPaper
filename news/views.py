@@ -11,6 +11,17 @@ from .filters import PostFilter
 from .forms import PostForm, CategoryForm
 from django.utils import timezone
 from datetime import timedelta , datetime
+import logging
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+
+django_logger = logging.getLogger('django')
+request_logger = logging.getLogger('django.request')
+server_logger = logging.getLogger('django.server')
+template_logger = logging.getLogger('django.template')
+db_logger = logging.getLogger('django.db.backends')
+security_logger = logging.getLogger('django.security')
 
 # Подписаться на категорию, при условии логина
 @login_required
@@ -162,3 +173,53 @@ class ArticleDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
 
     def get_queryset(self):
         return Post.objects.filter(post_type=Post.ARTICLE)
+
+# Проверка логирвоания
+
+@csrf_exempt  # для теста POST-запросов
+def test_logging(request):
+    """
+    Тестовое представление для проверки логирования.
+    Отправляет сообщения во все логгеры.
+    """
+
+    # ===== 1. ОСНОВНОЙ ЛОГГЕР (django) =====
+    django_logger.debug('[DEBUG] Это сообщение уровня DEBUG')
+    django_logger.info('[INFO] Это сообщение уровня INFO')
+    django_logger.warning('[WARNING] Это сообщение уровня WARNING')
+    django_logger.error('[ERROR] Это сообщение уровня ERROR')
+    django_logger.critical('[CRITICAL] Это сообщение уровня CRITICAL')
+
+    # ===== 2. ЛОГГЕР django.request =====
+    request_logger.error('[django.request] Ошибка в запросе')
+
+    # ===== 3. ЛОГГЕР django.server =====
+    server_logger.error('[django.server] Ошибка сервера')
+
+    # ===== 4. ЛОГГЕР django.template =====
+    template_logger.error('[django.template] Ошибка в шаблоне')
+
+    # ===== 5. ЛОГГЕР django.db.backends =====
+    db_logger.error('[django.db.backends] Ошибка базы данных')
+
+    # ===== 6. ЛОГГЕР django.security =====
+    security_logger.warning('[django.security] Подозрительное действие')
+    security_logger.error('[django.security] Критическая ошибка безопасности')
+
+    try:
+        1 / 0
+    except ZeroDivisionError as e:
+        django_logger.error('[EXC_INFO] Деление на ноль', exc_info=True)
+
+    return HttpResponse("""
+    <h1>Логи отправлены!</h1>
+    <p>Проверьте:</p>
+    <ul>
+        <li><b>Консоль</b> — все DEBUG+ сообщения</li>
+        <li><b>general.log</b> — INFO+ сообщения (при DEBUG=False)</li>
+        <li><b>errors.log</b> — ERROR+ от django.request, django.server, django.template, django.db.backends</li>
+        <li><b>security.log</b> — сообщения от django.security</li>
+        <li><b>Email</b> — ERROR+ от django.request и django.server</li>
+    </ul>
+    <p>Текущий DEBUG = <b>{}</b></p>
+    """.format(settings.DEBUG))
